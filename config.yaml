@@ -1,0 +1,22 @@
+server:
+  port: 3000
+
+srs:
+  # SRS服务器的HTTP API地址，用于触发流处理
+  # 根据实际SRS配置或插件调整此URL
+  api_url: "http://172.0.34.94:1985/api/v1/streams"
+  # 播放地址模板，{stream_name} 会被替换为实际流名称
+  playback_url_template: "http://172.0.34.94:8180/live/{stream_name}.flv"
+
+# API 访问密钥列表
+api_keys:
+  - "secret-token-1"
+  - "secret-token-2"
+
+streams:
+  - name: "Camera 1"
+    url: "rtsp://172.0.34.130:8554/stream"
+  - name: "Camera 2"
+    url: "rtsp://admin:password@192.168.1.102:554/stream1"
+  - name: "Test Stream"
+    url: "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"
