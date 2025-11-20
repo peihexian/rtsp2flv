@@ -127,8 +127,18 @@ async fn main() {
     let addr = format!("0.0.0.0:{}", config.server.port);
     tracing::info!("服务启动监听: {}", addr);
     
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    // 优雅处理端口绑定错误
+    let listener = match tokio::net::TcpListener::bind(&addr).await {
+        Ok(l) => l,
+        Err(e) => {
+            tracing::error!("无法绑定端口 {}: {}", addr, e);
+            return;
+        }
+    };
+
+    if let Err(e) = axum::serve(listener, app).await {
+        tracing::error!("服务器运行错误: {}", e);
+    }
 }
 
 /// 获取流列表接口
@@ -192,6 +202,8 @@ async fn play_stream(
     let rtmp_url = format!("rtmp://{}:1935/live/{}", host, safe_name);
 
     // 3. 启动转码任务
+    // 这里我们启动本地的 FFmpeg 转码任务，将 RTSP 流推送到 SRS
+    // SRS 接收 RTMP 推流后，会分发 HTTP-FLV 供前端播放
     state.stream_manager.start_stream(name.to_string(), rtsp_url.to_string(), rtmp_url);
     
     Ok(Json(PlayResponse { playback_url }))
